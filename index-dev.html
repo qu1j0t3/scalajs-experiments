@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Scala.js Tutorial</title>
+    <script type="text/javascript" src="./sigma.js-1.2.0/build/sigma.min.js"></script>
+    <!-- Include Scala.js compiled code -->
+    <script type="text/javascript" src="./target/scala-2.12/scala-js-experiments-jsdeps.js"></script>
+    <script type="text/javascript" src="./target/scala-2.12/scala-js-experiments-fastopt.js"></script>
+
+
+    <script type="text/javascript">
+/**
+ * This is a basic example on how to instantiate sigma. A random graph is
+ * generated and stored in the "graph" variable, and then sigma is instantiated
+ * directly with the graph.
+ *
+ * The simple instance of sigma is enough to make it render the graph on the on
+ * the screen, since the graph is given directly to the constructor.
+ */
+function render(order, graphs){
+    var g = { nodes: [], edges: [] };
+    graphs.forEach( function(graph, idx) {
+        function idPrefix(s, i) { return 'g'+idx+s+i; };
+
+        var i;
+
+        for (i = 1; i <= order; i++) {
+          var a = -2*Math.PI*(i+.5)/order
+          g.nodes.push({
+            id: idPrefix('n', i),
+            //label: ""+i,
+            x: (idx%7)*3.5 + Math.cos(a),
+            y: Math.floor(idx/7)*3.5 + Math.sin(a),
+            size: .05
+          });
+        }
+
+        graph.forEach( function(edge, edgeIdx) {
+          g.edges.push({
+            id: idPrefix('e', edgeIdx),
+            source: idPrefix('n', edge[0]),
+            target: idPrefix('n', edge[1]),
+            size: 1
+          });
+        } );
+
+    });
+        new sigma({ graph: g, container: 'graphs' });
+}
+</script>
+
+    <style>
+        #graphs {
+        position: absolute;
+        width: 90%;
+        height: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Run tutorial.webapp.TutorialApp -->
+    <script type="text/javascript">
+        tutorial.webapp.TutorialApp().main();
+    </script>
+
+    <div id="graphs"></div>
+
+</body>
+</html>
