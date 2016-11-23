@@ -9,6 +9,9 @@ import js.Dynamic.global
 import org.scalajs.dom
 import dom.document
 
+
+import org.querki.jquery._
+
 object TutorialApp extends JSApp {
 
   def mapValue[A,B,S](t: (A,S))(f: A => B): (B,S) = t match {
@@ -40,7 +43,7 @@ object TutorialApp extends JSApp {
       // Some of these graphs will be isomorphic to one another, so must be filtered further.
       val subgraphs = allEdges.combinations(k).map(_.toSet).toSet
 
-      unfold[Graph,Set[Graph]](subgraphs)( gs =>
+      val grafs = unfold[Graph,Set[Graph]](subgraphs)( gs =>
         // When gs is empty, unfolding will terminate with all subgraphs found so far.
         gs.headOption.map{ g =>
           // g is an arbitrary subgraph (selected from all combinations of k edges as above).
@@ -57,6 +60,26 @@ object TutorialApp extends JSApp {
           (g,gs -- perms)  // produce one subgraph g along with updated state, and continue to unfold
         }
       )._1
+
+      // Try every permutation of vertices to minimise the number of crossed edges.
+      // Of course this is an expensive, brute force search, but because vertices
+      // are arranged in a circle, we could omit trying
+      // all perms which are 'rotations' of forward or reverse order.
+      grafs.map { g =>
+        val bestPerm = labelPerms.map{ m =>
+          val crossings = g.toList.combinations(2).map {
+            case List((u0, v0), (u1, v1)) =>
+              val (u0_,v0_,u1_,v1_) = (m(u0),m(v0),m(u1),m(v1))
+              val m1 = Map(u0_ -> 0, v0_ -> 0, u1_ -> 1, v1_ -> 1)
+              List(u0_, v0_, u1_, v1_).distinct.sorted match {
+                case List(a, b, c, d) if m1(a) == m1(c) && m1(b) == m1(d) => 1
+                case _ => 0
+              }
+          }
+          (m,crossings.sum)
+        }.minBy(_._2)._1
+        g.map{ case (u,v) => (bestPerm(u),bestPerm(v)) }
+      }
     }
   }
 
@@ -76,8 +99,6 @@ object TutorialApp extends JSApp {
 
   def main(): Unit = {
 
-    import org.querki.jquery._
-
     import js.JSConverters._
 
     //appendPre(document.body, graphs(6).map(_.toString).mkString("\n"))
@@ -87,12 +108,7 @@ object TutorialApp extends JSApp {
 
       val order = 5
       val gs = graphs(order)
-      /*
-      (0 until gs.length).foreach { idx =>
-        val div = document.createElement("div")
-        div.id = "g"+idx
-        $("#graphs").append(div)
-      }*/
+
       MyApiImpl.render(order, gs.map(_.map { case (u, v) => js.Array(u, v) }.toJSArray).toJSArray)
     }
   }
