@@ -20,6 +20,7 @@
  */
 function render(order, graphs){
     var g = { nodes: [], edges: [] };
+    var columns = Math.ceil(Math.sqrt(graphs.length));
     graphs.forEach( function(graph, idx) {
         function idPrefix(s, i) { return 'g'+idx+s+i; };
 
@@ -30,9 +31,9 @@ function render(order, graphs){
           g.nodes.push({
             id: idPrefix('n', i),
             //label: ""+i,
-            x: (idx%7)*3.5 + Math.cos(a),
-            y: Math.floor(idx/7)*3.5 + Math.sin(a),
-            size: .05
+            x: (idx%columns)*3.5 + Math.cos(a),
+            y: Math.floor(idx/columns)*3.5 + Math.sin(a),
+            size: 0.3
           });
         }
 
