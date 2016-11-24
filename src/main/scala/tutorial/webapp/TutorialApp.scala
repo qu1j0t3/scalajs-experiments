@@ -38,6 +38,16 @@ object TutorialApp extends JSApp {
     val labelPerms = (1 to vertices).permutations
       .map(_.zipWithIndex.map{ case (label,idx) => (idx+1) -> label }.toMap).toList
 
+    // Try permutations of vertices to minimise the number of crossed edges.
+    // Of course this is an expensive, brute force search, but because vertices
+    // are arranged in a circle, can skip those which are 'rotations'
+    // or reversals of one another.
+    val nonrotating = (2 to vertices).toList.permutations.toSet
+    val nonreversed = unfold(nonrotating)( perms =>
+      perms.headOption.map(p => (p, perms - p - p.reverse)) )._1
+    val circPerms = nonreversed.map(1 :: _)
+      .map(_.zipWithIndex.map{ case (label,idx) => (idx+1) -> label }.toMap).toList
+
     (0 to allEdges.size).flatMap{ k =>
       // Get all subgraphs formed by combinations of k edges from the set of all edges.
       // Some of these graphs will be isomorphic to one another, so must be filtered further.
@@ -61,12 +71,8 @@ object TutorialApp extends JSApp {
         }
       )._1
 
-      // Try every permutation of vertices to minimise the number of crossed edges.
-      // Of course this is an expensive, brute force search, but because vertices
-      // are arranged in a circle, we could omit trying
-      // all perms which are 'rotations' of forward or reverse order.
       grafs.map { g =>
-        val bestPerm = labelPerms.map{ m =>
+        val bestPerm = circPerms.map{ m =>
           val crossings = g.toList.combinations(2).map {
             case List((u0, v0), (u1, v1)) =>
               val (u0_,v0_,u1_,v1_) = (m(u0),m(v0),m(u1),m(v1))
