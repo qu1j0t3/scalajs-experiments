@@ -6,8 +6,6 @@ scalaVersion := "2.12.0"
 
 enablePlugins(ScalaJSPlugin)
 
-name := "Scala.js Experiments"
-
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.1"
 
 libraryDependencies += "org.querki" %%% "jquery-facade" % "1.0"
