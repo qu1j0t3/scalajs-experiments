@@ -103,10 +103,10 @@ object TutorialApp {
 
     dom.window.onload = _ => {
       global.console.log("LOADED")
-      appendPre(document.body, graphs(3).map(_.toString).mkString("\n"))
 
-      val order = 3
+      val order = 6
       val gs = graphs(order)
+      //appendPre(document.body, gs.map(_.toString).mkString("\n"))
 
       MyApiImpl.render(order, gs.map(_.map { case (u, v) => js.Array(u, v) }.toJSArray).toJSArray)
     }

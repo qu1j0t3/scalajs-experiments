@@ -5,13 +5,16 @@
     <title>The Scala.js Tutorial</title>
 
     <!-- See: https://js.cytoscape.org/ -->
-    <script type="text/javascript" src="cytoscape.js"></script>
+    <script type="text/javascript" src="node_modules/cytoscape/dist/cytoscape.min.js"></script>
 
     <!-- Include Scala.js compiled code -->
-    <script type="text/javascript" src="./target/scala-2.12/scalajs-experiments-fastopt.js"></script>
+    <script type="text/javascript" src="target/scala-2.12/scalajs-experiments-fastopt.js"></script>
 
     <script type="text/javascript">
         function render(order, graphs) {
+            var graphSpacing = 50;
+            var graphRadius = 15;
+
             var g = {
                 container: document.getElementById('cy'),
                 elements: [],
@@ -19,17 +22,20 @@
                     name: 'preset',
                     positions: {}
                 },
-                style: cytoscape.stylesheet()
-                    .selector('node')
-                      .style({
-                        'width': '6px',
-                        'height': '6px',
-                        'shape': 'ellipse'
-                      })
-                    .selector('edge')
-                      .style({
-                        'width': '1.5px'
-                      })
+                style: [
+                    {
+                        selector: 'node',
+                        style: { width: 6, height: 6, shape: 'ellipse' }
+                    },
+                    {
+                        selector: 'edge',
+                        style: { width: 1.5 }
+                    },
+                    {
+                        selector: '.odd',
+                        style: { 'background-color': 'black', 'line-color': 'black' }
+                    }
+                ]
             };
 
             var cols = Math.ceil(Math.sqrt(graphs.length));
@@ -38,12 +44,14 @@
                 function idPrefix(s, i) { return 'g'+idx+s+i; };
 
                 var i;
+                var classes = graph.length % 2 ? ['odd'] : [];
                 for (i = 1; i <= order; i++) {
                   var nodeId = idPrefix('n', i);
-                  g.elements.push({ data: { id: nodeId } });
+                  g.elements.push({
+                    data: { id: nodeId, v: i },
+                    classes: classes
+                  });
 
-                  var graphSpacing = 50;
-                  var graphRadius = 15;
                   var cx = (idx % cols) * graphSpacing;
                   var cy = Math.floor(idx / cols) * graphSpacing;
                   var a = 2*Math.PI*i/order;
@@ -59,12 +67,15 @@
                         id: idPrefix('e', edgeIdx),
                         source: idPrefix('n', edge[0]),
                         target: idPrefix('n', edge[1])
-                      } });
+                      },
+                      classes: classes
+                  });
                 } );
 
             });
+
             var cy = cytoscape(g);
-            cy.ready( function() { console.log('graph ready') } );
+            //cy.ready( function() { console.log('graph ready') } );
         }
     </script>
 
