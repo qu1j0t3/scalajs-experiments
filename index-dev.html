@@ -3,72 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <title>The Scala.js Tutorial</title>
-    <script type="text/javascript" src="cytoscape.js"></script>
-    <!-- Include Scala.js compiled code -->
-    <script type="text/javascript" src="./target/scala-2.12/scala-js-experiments-jsdeps.js"></script>
-    <script type="text/javascript" src="./target/scala-2.12/scala-js-experiments-fastopt.js"></script>
 
+    <!-- See: https://js.cytoscape.org/ -->
+    <script type="text/javascript" src="cytoscape.js"></script>
+
+    <!-- Include Scala.js compiled code -->
+    <script type="text/javascript" src="./target/scala-2.12/scalajs-experiments-fastopt.js"></script>
 
     <script type="text/javascript">
-function render(order, graphs){
-    var g = {
-        container: document.getElementById('cy'),
-        elements: [],
-        layout: {
-            name: 'cose'
-        },
-        style: cytoscape.stylesheet()
-            .selector('node')
-              .style({
-                'width': '10px',
-                'height': '10px',
-                'shape': 'ellipse'
-              })
-            .selector('edge')
-              .style({
-                'width': '2px'
-              })
-    };
+        function render(order, graphs) {
+            var g = {
+                container: document.getElementById('cy'),
+                elements: [],
+                layout: {
+                    name: 'preset',
+                    positions: {}
+                },
+                style: cytoscape.stylesheet()
+                    .selector('node')
+                      .style({
+                        'width': '6px',
+                        'height': '6px',
+                        'shape': 'ellipse'
+                      })
+                    .selector('edge')
+                      .style({
+                        'width': '1.5px'
+                      })
+            };
 
-    graphs.forEach( function(graph, idx) {
-        function idPrefix(s, i) { return 'g'+idx+s+i; };
+            var cols = Math.ceil(Math.sqrt(graphs.length));
 
-        var i;
+            graphs.forEach( function(graph, idx) {
+                function idPrefix(s, i) { return 'g'+idx+s+i; };
 
-        for (i = 1; i <= order; i++) {
-          g.elements.push({ data: { id: idPrefix('n', i) } });
+                var i;
+                for (i = 1; i <= order; i++) {
+                  var nodeId = idPrefix('n', i);
+                  g.elements.push({ data: { id: nodeId } });
+
+                  var graphSpacing = 50;
+                  var graphRadius = 15;
+                  var cx = (idx % cols) * graphSpacing;
+                  var cy = Math.floor(idx / cols) * graphSpacing;
+                  var a = 2*Math.PI*i/order;
+                  g.layout.positions[nodeId] = {
+                    x: cx+graphRadius*Math.cos(a),
+                    y: cy+graphRadius*Math.sin(a)
+                  };
+                }
+
+                graph.forEach( function(edge, edgeIdx) {
+                  g.elements.push({
+                      data: {
+                        id: idPrefix('e', edgeIdx),
+                        source: idPrefix('n', edge[0]),
+                        target: idPrefix('n', edge[1])
+                      } });
+                } );
+
+            });
+            var cy = cytoscape(g);
+            cy.ready( function() { console.log('graph ready') } );
         }
-
-        graph.forEach( function(edge, edgeIdx) {
-          g.elements.push({
-              data: {
-                id: idPrefix('e', edgeIdx),
-                source: idPrefix('n', edge[0]),
-                target: idPrefix('n', edge[1])
-              } });
-        } );
-
-    });
-    var cy = cytoscape(g);
-}
-</script>
+    </script>
 
     <style>
         #cy {
-        position: absolute;
-        width: 90%;
-        height: 90%;
+            position: absolute;
+            width: 90%;
+            height: 90%;
         }
     </style>
 </head>
+
 <body>
-
-    <!-- Run tutorial.webapp.TutorialApp -->
-    <script type="text/javascript">
-        tutorial.webapp.TutorialApp().main();
-    </script>
-
     <div id="cy"></div>
-
 </body>
+
 </html>

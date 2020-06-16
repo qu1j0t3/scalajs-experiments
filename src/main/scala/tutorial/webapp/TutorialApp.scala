@@ -1,18 +1,12 @@
 package tutorial.webapp
 
 import scalajs.js
-
-import js.JSApp
 import js.annotation._
 import js.Dynamic.global
-
 import org.scalajs.dom
 import dom.document
 
-
-import org.querki.jquery._
-
-object TutorialApp extends JSApp {
+object TutorialApp {
 
   def mapValue[A,B,S](t: (A,S))(f: A => B): (B,S) = t match {
     case (a,s) => (f(a),s)
@@ -103,16 +97,15 @@ object TutorialApp extends JSApp {
     def render(order: Int, gs: js.Array[js.Array[js.Array[Int]]]): Unit = js.native
   }
 
-  def main(): Unit = {
+  def main(args: Array[String]): Unit = {
 
     import js.JSConverters._
 
-    //appendPre(document.body, graphs(6).map(_.toString).mkString("\n"))
-
-    $ { () =>
+    dom.window.onload = _ => {
       global.console.log("LOADED")
+      appendPre(document.body, graphs(3).map(_.toString).mkString("\n"))
 
-      val order = 5
+      val order = 3
       val gs = graphs(order)
 
       MyApiImpl.render(order, gs.map(_.map { case (u, v) => js.Array(u, v) }.toJSArray).toJSArray)
