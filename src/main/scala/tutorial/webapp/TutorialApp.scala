@@ -98,7 +98,8 @@ object TutorialApp {
         (2 to vertices).toList.permutations.map(1 :: _).map(permMap).toList
 
       grafs.map { g =>
-        val bestPerm = circPerms.map{ m => // each m is a candidate label mapping
+        val bestPerm = circPerms.foldLeft( (Map[Int,Int](),Int.MaxValue) ){
+          case ((best,min), m) => // each m is a candidate label mapping
             // take every pair of edges and see if they cross under the mapping
             val crossings = g.toList.combinations(2).map {
               case List((u0, v0), (u1, v1)) =>
@@ -110,9 +111,13 @@ object TutorialApp {
                   case List(a, b, c, d) if m1(a) == m1(c) && m1(b) == m1(d) => 1
                   case _ => 0
                 }
+            }.sum
+            if (crossings < min) {
+              (m, crossings)
+            } else {
+              (best, min)
             }
-            (m,crossings.sum)
-          }.minBy(_._2)._1
+          }._1
         g.map{ case (u,v) => (bestPerm(u),bestPerm(v)) }
       }
     }
