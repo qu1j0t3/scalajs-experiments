@@ -103,8 +103,6 @@ object TutorialApp {
             // TODO: Can probably optimise this a bit by stopping
             //       as soon as a zero crossing permutation is found,
             //       since that can't be improved upon by checking the rest.
-            // Even better, can we work out the MINIMUM possible crossings
-            // just knowing the number of edges and vertices? Then generalise this optimisation.
 
             // take every pair of edges and see if they cross under the mapping
             val crossings = g.toList.combinations(2).map {
@@ -121,15 +119,24 @@ object TutorialApp {
                   // the sorted labels of the other edge -- then the two edges must cross,
                   // when laid out in order around our chosen circular sequence.
 
+                  // These are the cases, marked by the edge owning vertices laid out in order:
+                  //   0 0 1 1 (no crossing)
+                  //   1 1 0 0 (no crossing)
+                  //   0 1 1 0 (no crossing)
+                  //   1 0 0 1 (no crossing)
+                  //   0 1 0 1 (crossing) -- hint: first and third are the same,
+                  //   1 0 1 0 (crossing) --       and second and fourth are the same
+
                   // map labels according to the permutation being tested
                   val (u0_, v0_, u1_, v1_) = (m(u0), m(v0), m(u1), m(v1))
-
-                  // bit mask for vertices owned by second edge
-                  val e = (1 << u1_) | (1 << v1_)
-
-                  List(u0_, v0_, u1_, v1_).sorted match {
-                    case List(a, _, b, _) => ((e >> a) ^ (e >> b) ^ 1) & 1
-                  }
+                  // pick one of the edges and sort its vertex labels
+                  val (u,v) = if (u0_ < v0_) (u0_,v0_) else (v0_,u0_)
+                  // take one vertex from the other edge and see if it's between test edge vertices
+                  val a = if (u1_ > u && u1_ < v) 1 else 0
+                  // do the same for the 2nd vertex from the other edge
+                  val b = if (v1_ > u && v1_ < v) 1 else 0
+                  // there is a crossing if only one of the vertices is between
+                  a ^ b
                 }
             }.sum
 
