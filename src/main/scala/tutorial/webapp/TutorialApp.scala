@@ -81,9 +81,6 @@ object TutorialApp {
       // we want to prefer those which minimise the number of edge crossings in our
       // arbitrarily chosen display format (vertices equally spaced around a circle).
 
-      // TODO: Among those with minimal crossings, we also want to prefer the "shortest" total
-      //       edge length given our display format.
-
       // Try permutations of vertices to minimise the number of crossed edges.
       // Of course this is an expensive, brute force search, but because vertices
       // are arranged in a circle, can skip those which are 'rotations'
@@ -92,17 +89,16 @@ object TutorialApp {
       // In every one of these permutations in `circPerms`, vertex 1 remains fixed ...
       // given this, we know that none are reversals or rotations of another.
 
-      // FIXME: This shouldn't be ALL permutations, but only those where vertex 1 maps to itself?
+      // TODO: What happens if we sort these by fewest inversions?
       val circPerms: List[Map[Int, Int]] =
         (2 to vertices).toList.permutations.map(1 :: _).map(p => vs.zip(p).toMap).toList
 
       grafs.map { g =>
         val bestPerm = circPerms.foldLeft( (Map[Int,Int](),Int.MaxValue) ){
-          case ((best,min), m) => // each m is a candidate label mapping
+          case (zeroCrossings @ (_,0), _) => // once we have hit zero crossings, no need to test further perms
+            zeroCrossings
 
-            // TODO: Can probably optimise this a bit by stopping
-            //       as soon as a zero crossing permutation is found,
-            //       since that can't be improved upon by checking the rest.
+          case ((best,min), m) => // each m is a candidate label mapping
 
             // take every pair of edges and see if they cross under the mapping
             val crossings = g.toList.combinations(2).map {
