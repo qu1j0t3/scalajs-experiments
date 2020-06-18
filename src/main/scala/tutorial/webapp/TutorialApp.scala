@@ -8,7 +8,8 @@ import dom.document
 
 object TutorialApp {
 
-  type Edge = (Int,Int)
+  case class Edge(u: Int, v: Int)
+
   type Graph = Set[Edge]
 
   /* Produce all rotations of given list
@@ -39,18 +40,15 @@ object TutorialApp {
 
   def graphs(vertices: Int): IndexedSeq[Graph] = {
     // Construct set of all undirected edges for given number of vertices
-    // (equivalent to a triangular adjacency matrix).
+    // NOTE: u > v (equivalent to a triangular adjacency matrix).
     val allEdges = for {
       v <- 1 until vertices
       u <- (v+1) to vertices
-    } yield (u,v)
-    // NOTE: u > v
-
-    val permMap: List[Int] => Map[Int, Int] =
-      _.zipWithIndex.map{ case (label,idx) => (idx+1) -> label }.toMap
+    } yield Edge(u,v)
 
     // Get all permutations of vertex labels as a list of maps
-    val labelPerms: List[Map[Int, Int]] = (1 to vertices).toList.permutations.map(permMap).toList
+    val vs = 1 to vertices
+    val labelPerms: List[Map[Int, Int]] = vs.permutations.map(p => vs.zip(p).toMap).toList
 
     (0 to allEdges.size).flatMap{ k =>
       // Get all subgraphs formed by combinations of k edges from the set of all edges.
@@ -66,9 +64,9 @@ object TutorialApp {
           // Identify its isomorphisms by applying every possible permutation of labels.
           val perms =
             labelPerms.map{ p =>   // p ranges across every permutation (mapping) of labels
-              g.map{ case (u,v) => // (u,v) ranges across each edge in subgraph
+              g.map{ case Edge(u,v) => // (u,v) ranges across each edge in subgraph
                 val (u_,v_) = (p(u),p(v))         // permutation might give u <= v, i.e. outside the domain of edges,
-                if(u_ > v_) (u_,v_) else (v_,u_)  // but still a logical edge (v,u)
+                if(u_ > v_) Edge(u_,v_) else Edge(v_,u_)  // but still a logical edge (v,u)
               }
             }
           // Removing all label-permuted subgraphs from the unfolding state
@@ -94,13 +92,13 @@ object TutorialApp {
       // In every one of these permutations in `circPerms`, vertex 1 remains fixed ...
       // given this, we know that none are reversals or rotations of another.
 
+      // FIXME: This shouldn't be ALL permutations, but only those where vertex 1 maps to itself?
       val circPerms: List[Map[Int, Int]] =
-        (2 to vertices).toList.permutations.map(1 :: _).map(permMap).toList
+        vs.permutations/*.map(1 :: _)*/.map(p => vs.zip(p).toMap).toList
 
       grafs.map { g =>
         val bestPerm = circPerms.foldLeft( (Map[Int,Int](),Int.MaxValue) ){
           case ((best,min), m) => // each m is a candidate label mapping
-            // take every pair of edges and see if they cross under the mapping
 
             // TODO: Can probably optimise this a bit by stopping
             //       as soon as a zero crossing permutation is found,
@@ -108,28 +106,32 @@ object TutorialApp {
             // Even better, can we work out the MINIMUM possible crossings
             // just knowing the number of edges and vertices? Then generalise this optimisation.
 
+            // take every pair of edges and see if they cross under the mapping
             val crossings = g.toList.combinations(2).map {
-              case List((u0, v0), (u1, v1)) =>
+              case List(Edge(u0, v0), Edge(u1, v1)) =>
                 // A pair of edges will either be in the form:
                 // a -> b -> b -> c   if they share one point (this can NEVER be a crossing)
                 // or a -> b, c -> d  if they are not connected
 
-                // 1) by taking distinct vertex labels, we end up with either 3 or 4 points
+                if (u0 == u1 || u0 == v1 || v0 == u1 || v0 == v1) {
+                  0 // edges share a vertex
+                } else {
+                  // by sorting vertices by label regardless of the edge they belong to,
+                  // we only have to determine whether a vertex from one edge lies in between
+                  // the sorted labels of the other edge -- then the two edges must cross,
+                  // when laid out in order around our chosen circular sequence.
 
-                // 2) by sorting vertices by label regardless of the edge they belong to,
-                // we only have to determine whether a vertex from one edge lies in between
-                // the sorted labels of the other edge -- then the two edges must cross,
-                // when laid out in order around our chosen circular sequence.
+                  // map labels according to the permutation being tested
+                  val (u0_, v0_, u1_, v1_) = (m(u0), m(v0), m(u1), m(v1))
 
-                // map labels according to the permutation being tested
-                val (u0_, v0_, u1_, v1_) = (m(u0), m(v0), m(u1), m(v1))
+                  // TODO: Also try using an integer as a bit-set instead of a Map
 
-                // identify owning edge by vertex label
-                val edgeOf = Map(u0_ -> 0, v0_ -> 0, u1_ -> 1, v1_ -> 1)
+                  // identify owning edge by vertex label
+                  val edgeOf = Map(u0_ -> 0, v0_ -> 0, u1_ -> 1, v1_ -> 1)
 
-                List(u0_, v0_, u1_, v1_).distinct.sorted match {
-                  case List(a, _, b, _) => if (edgeOf(a) == edgeOf(b) ) 1 else 0
-                  case List(_, _, _) => 0
+                  List(u0_, v0_, u1_, v1_).sorted match {
+                    case List(a, _, b, _) => if(edgeOf(a) == edgeOf(b)) 1 else 0
+                  }
                 }
             }.sum
 
@@ -139,7 +141,7 @@ object TutorialApp {
               (best, min)
             }
           }._1
-        g.map{ case (u,v) => (bestPerm(u),bestPerm(v)) }
+        g.map{ case Edge(u,v) => Edge(bestPerm(u),bestPerm(v)) }
       }
     }
   }
@@ -169,7 +171,7 @@ object TutorialApp {
       val gs = graphs(order)
       //appendPre(document.body, gs.map(_.toString).mkString("\n"))
 
-      MyApiImpl.render(order, gs.map(_.map { case (u, v) => js.Array(u, v) }.toJSArray).toJSArray)
+      MyApiImpl.render(order, gs.map(_.map { case Edge(u, v) => js.Array(u, v) }.toJSArray).toJSArray)
     }
   }
 }
