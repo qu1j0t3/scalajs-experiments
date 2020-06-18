@@ -101,17 +101,38 @@ object TutorialApp {
         val bestPerm = circPerms.foldLeft( (Map[Int,Int](),Int.MaxValue) ){
           case ((best,min), m) => // each m is a candidate label mapping
             // take every pair of edges and see if they cross under the mapping
+
+            // TODO: Can probably optimise this a bit by stopping
+            //       as soon as a zero crossing permutation is found,
+            //       since that can't be improved upon by checking the rest.
+            // Even better, can we work out the MINIMUM possible crossings
+            // just knowing the number of edges and vertices? Then generalise this optimisation.
+
             val crossings = g.toList.combinations(2).map {
               case List((u0, v0), (u1, v1)) =>
-                val (u0_,v0_,u1_,v1_) = (m(u0),m(v0),m(u1),m(v1))  // map labels for the 2 edges
-                // I have to be frank, I can't recall how this works right now. TODO: Update this comment
-                // The moral is, write comments at the time you have it fresh in mind!
-                val m1 = Map(u0_ -> 0, v0_ -> 0, u1_ -> 1, v1_ -> 1)
+                // A pair of edges will either be in the form:
+                // a -> b -> b -> c   if they share one point (this can NEVER be a crossing)
+                // or a -> b, c -> d  if they are not connected
+
+                // 1) by taking distinct vertex labels, we end up with either 3 or 4 points
+
+                // 2) by sorting vertices by label regardless of the edge they belong to,
+                // we only have to determine whether a vertex from one edge lies in between
+                // the sorted labels of the other edge -- then the two edges must cross,
+                // when laid out in order around our chosen circular sequence.
+
+                // map labels according to the permutation being tested
+                val (u0_, v0_, u1_, v1_) = (m(u0), m(v0), m(u1), m(v1))
+
+                // identify owning edge by vertex label
+                val edgeOf = Map(u0_ -> 0, v0_ -> 0, u1_ -> 1, v1_ -> 1)
+
                 List(u0_, v0_, u1_, v1_).distinct.sorted match {
-                  case List(a, b, c, d) if m1(a) == m1(c) && m1(b) == m1(d) => 1
-                  case _ => 0
+                  case List(a, _, b, _) => if (edgeOf(a) == edgeOf(b) ) 1 else 0
+                  case List(_, _, _) => 0
                 }
             }.sum
+
             if (crossings < min) {
               (m, crossings)
             } else {
