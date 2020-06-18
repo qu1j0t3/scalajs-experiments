@@ -94,7 +94,7 @@ object TutorialApp {
 
       // FIXME: This shouldn't be ALL permutations, but only those where vertex 1 maps to itself?
       val circPerms: List[Map[Int, Int]] =
-        vs.permutations/*.map(1 :: _)*/.map(p => vs.zip(p).toMap).toList
+        (2 to vertices).toList.permutations.map(1 :: _).map(p => vs.zip(p).toMap).toList
 
       grafs.map { g =>
         val bestPerm = circPerms.foldLeft( (Map[Int,Int](),Int.MaxValue) ){
@@ -124,13 +124,11 @@ object TutorialApp {
                   // map labels according to the permutation being tested
                   val (u0_, v0_, u1_, v1_) = (m(u0), m(v0), m(u1), m(v1))
 
-                  // TODO: Also try using an integer as a bit-set instead of a Map
-
-                  // identify owning edge by vertex label
-                  val edgeOf = Map(u0_ -> 0, v0_ -> 0, u1_ -> 1, v1_ -> 1)
+                  // bit mask for vertices owned by second edge
+                  val e = (1 << u1_) | (1 << v1_)
 
                   List(u0_, v0_, u1_, v1_).sorted match {
-                    case List(a, _, b, _) => if(edgeOf(a) == edgeOf(b)) 1 else 0
+                    case List(a, _, b, _) => ((e >> a) ^ (e >> b) ^ 1) & 1
                   }
                 }
             }.sum
