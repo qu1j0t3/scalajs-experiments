@@ -22,6 +22,10 @@ object VectorData {
   //   multiple or optional parameters. These parameters
   //   must be separated by commas
 
+  // Parameters for HP 1347A vector display
+  val xMax = 2047
+  val yMax = 1512
+
   sealed trait HpGlPen {
     def number: Int
   }
@@ -43,9 +47,13 @@ object VectorData {
   case object PenDown extends HpGlCommand {
     def text = "PD"
   }
+  // Both X- and Y-parameters in integer display units having values between
+  // 0 to 2047 for the X parameter and 0 to 1512 for the Y parameter.
   case class PlotAbs(ps: (Double,Double)*) extends HpGlCommand {
     def text = s"PA ${ns(ps)}"
   }
+  // A positive value moves the beam up and to the right,
+  // and a negative value moves the beam down and to the left.
   case class PlotRel(ps: (Double,Double)*) extends HpGlCommand {
     def text = s"PR ${ns(ps)}"
   }
@@ -54,19 +62,23 @@ object VectorData {
   }
 
   def run(): Unit = {
-    val order = 3
+    val order = 4
     val gs = GraphEnumerate.graphs(order)
 
-    val graphSpacing = 50;
-    val graphRadius = 15;
+    val xCentre = xMax/2
+    val yCentre = yMax/2
+    // Aim for a squarish layout
     val cols = Math.ceil(Math.sqrt(gs.length))
+    val rows = (gs.length + cols - 1)/cols
+    val graphSpacing = yMax / (rows+2); // Height of screen is less than width
+    val graphRadius = graphSpacing * 0.3
 
     gs.zipWithIndex.flatMap { case (g,idx) =>
       // graph nodes are labelled 1..order
 
       def pos(i: Int): (Double,Double) = {
-        val cx = ((idx % cols)+1) * graphSpacing
-        val cy = (Math.floor(idx / cols)+1) * graphSpacing
+        val cx = xCentre + ((idx % cols) - (cols-1)/2.0) * graphSpacing
+        val cy = yCentre + (Math.floor(idx / cols) - (rows-1)/2.0) * graphSpacing
         val a = 2*Math.PI*i/order
         (cx + graphRadius*Math.cos(a),
          cy + graphRadius*Math.sin(a))
