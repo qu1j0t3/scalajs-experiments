@@ -6,7 +6,7 @@ import js.Dynamic.global
 import org.scalajs.dom
 import dom.document
 
-object TutorialApp {
+object GraphEnumerate {
 
   case class Edge(u: Int, v: Int)
 
@@ -128,11 +128,11 @@ object TutorialApp {
                   // pick one of the edges and sort its vertex labels
                   val (u,v) = if (u0_ < v0_) (u0_,v0_) else (v0_,u0_)
                   // take one vertex from the other edge and see if it's between test edge vertices
-                  val a = if (u1_ > u && u1_ < v) 1 else 0
+                  val u1inside = if (u1_ > u && u1_ < v) 1 else 0
                   // do the same for the 2nd vertex from the other edge
-                  val b = if (v1_ > u && v1_ < v) 1 else 0
-                  // there is a crossing if only one of the vertices is between
-                  a ^ b
+                  val v1inside = if (v1_ > u && v1_ < v) 1 else 0
+                  // there is a crossing if exactly one of the vertices is between
+                  u1inside ^ v1inside
                 }
             }.sum
 
@@ -166,11 +166,11 @@ object TutorialApp {
     import js.JSConverters._
 
     dom.window.onload = _ => {
-      global.console.log("LOADED")
-
+      val t0 = global.Date.now()
       val order = 6
       val gs = graphs(order)
-      //appendPre(document.body, gs.map(_.toString).mkString("\n"))
+      val t1 = global.Date.now()
+      appendPre(document.body, (t1-t0).toString)
 
       MyApiImpl.render(order, gs.map(_.map { case Edge(u, v) => js.Array(u, v) }.toJSArray).toJSArray)
     }
