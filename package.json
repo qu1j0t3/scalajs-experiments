@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "cytoscape": "^3.15.1"
+    "cytoscape": "^3.15.1",
+    "cytoscape-cose-bilkent": "^4.1.0"
   }
 }

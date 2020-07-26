@@ -15,6 +15,9 @@
 
     <!-- See: https://js.cytoscape.org/ -->
     <script type="text/javascript" src="node_modules/cytoscape/dist/cytoscape.min.js"></script>
+    <script type="text/javascript" src="node_modules/layout-base/layout-base.js"></script>
+    <script type="text/javascript" src="node_modules/cose-base/cose-base.js"></script>
+    <script type="text/javascript" src="node_modules/cytoscape-cose-bilkent/cytoscape-cose-bilkent.js"></script>
 
     <!-- Include Scala.js compiled code -->
     <script type="text/javascript" src="target/scala-2.12/scalajs-experiments-fastopt.js"></script>
@@ -28,6 +31,7 @@
                 container: document.getElementById('cy'),
                 elements: [],
                 layout: {
+                    //name: 'cose-bilkent',
                     name: 'preset',
                     positions: {}
                 },
