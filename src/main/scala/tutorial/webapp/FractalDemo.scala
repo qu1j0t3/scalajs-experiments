@@ -53,12 +53,12 @@ object FractalDemo {
     type Ctx2D = dom.CanvasRenderingContext2D
     val ctx = c.getContext("2d").asInstanceOf[Ctx2D]
 
-    val w = Math.min(c.width, c.height)
-
-    ctx.strokeStyle = "red"
+    ctx.strokeStyle = "#7dff9a"
     ctx.lineWidth = 3
+    ctx.lineCap = "round"
+    ctx.globalCompositeOperation = "lighter"
 
-    plot(w, w).foreach{ case Line(x0, y0, x1, y1) =>
+    plot(c.width, c.height).foreach{ case Line(x0, y0, x1, y1) =>
       ctx.beginPath()
       ctx.moveTo(x0, y0)
       ctx.lineTo(x1, y1)

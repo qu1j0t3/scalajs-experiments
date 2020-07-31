@@ -5,10 +5,8 @@
     <title>Fractal</title>
 
     <style>
-        #the-canvas {
-            position: absolute;
-            width: 95%;
-            height: 95%;
+        body {
+            background-color: black;
         }
     </style>
 
@@ -17,13 +15,13 @@
 
     <script type="text/javascript">
         window.onload = function(){
-            runFrac(document.getElementById('the-canvas'));
-        };
+            runFrac(document.getElementById('canvas'))
+        }
     </script>
 </head>
 
 <body>
-    <canvas id="the-canvas"></canvas>
+    <canvas id="canvas" width="1200" height="800"></canvas>
 </body>
 
 </html>
