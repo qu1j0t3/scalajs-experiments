@@ -4,13 +4,10 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.charset.StandardCharsets
 
 import tutorial.webapp.GraphEnumerate.Edge
-import com.fazecast.jSerialComm.{SerialPort, SerialPortEvent, SerialPortMessageListener}
+import com.fazecast.jSerialComm.SerialPort
 
 object VectorData {
-
-  // Parameters for HP 1347A vector display
-  val xMax = 2047
-  val yMax = 1512
+  import HpGl._
 
   // GPIB adapter setup to communicate interactively with HP:
   // ++v 1        ; interactive mode
@@ -86,26 +83,7 @@ object VectorData {
     bw.write(commands.map(_.text + ";\n").mkString)
     bw.close()
 
-    val port = SerialPort.getCommPort("/dev/tty.wchusbserial1d10")
-    def writeString(s: String): Unit = {
-      val bytes = s.getBytes(StandardCharsets.US_ASCII)
-      port.writeBytes(bytes, bytes.length)
-      Thread.sleep(10)
-    }
-    port.setComPortParameters(115200, 8, 1, SerialPort.NO_PARITY)
-    assert(port.openPort());
-    Thread.sleep(1000)
-    writeString("\n")
-    writeString("++v 0\n")
-    writeString("++auto 0\n")
-    writeString("++addr 1\n")
-    writeString("\n")
-    writeString("pg;\n")
-    commands.foreach { cmd =>
-      writeString(cmd.text + ";\n")
-    }
-    Thread.sleep(100)
-    port.closePort()
+    HpGl.send(commands)
   }
 
 }
