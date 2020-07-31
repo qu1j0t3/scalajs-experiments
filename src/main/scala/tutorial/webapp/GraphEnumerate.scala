@@ -154,25 +154,22 @@ object GraphEnumerate {
     targetNode.appendChild(parNode)
   }
 
-
   @js.native
   @JSGlobalScope
   object MyApiImpl extends js.Object {
-    def render(order: Int, gs: js.Array[js.Array[js.Array[Int]]]): Unit = js.native
+    def renderGraphs(order: Int, gs: js.Array[js.Array[js.Array[Int]]]): Unit = js.native
   }
 
-  def main(args: Array[String]): Unit = {
-
+  @JSExportTopLevel("runGraphs")
+  def runGraphs(): Unit = {
     import js.JSConverters._
 
-    dom.window.onload = _ => {
-      val t0 = global.Date.now()
-      val order = 6
-      val gs = graphs(order)
-      val t1 = global.Date.now()
-      appendPre(document.body, (t1-t0).toString)
+    val t0 = global.Date.now()
+    val order = 5
+    val gs = graphs(order)
+    val t1 = global.Date.now()
+    appendPre(document.body, (t1 - t0).toString)
 
-      MyApiImpl.render(order, gs.map(_.map { case Edge(u, v) => js.Array(u, v) }.toJSArray).toJSArray)
-    }
+    MyApiImpl.renderGraphs(order, gs.map(_.map { case Edge(u, v) => js.Array(u, v) }.toJSArray).toJSArray)
   }
 }

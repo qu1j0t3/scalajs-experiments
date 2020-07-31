@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>The Scala.js Tutorial</title>
-
+    <title>Graph Enumeration</title>
 
     <style>
         #cy {
@@ -23,7 +22,7 @@
     <script type="text/javascript" src="target/scala-2.12/scalajs-experiments-fastopt.js"></script>
 
     <script type="text/javascript">
-        function render(order, graphs) {
+        function renderGraphs(order, graphs) {
             var graphSpacing = 50;
             var graphRadius = 15;
 
@@ -38,7 +37,10 @@
                 style: [
                     {
                         selector: 'node',
-                        style: { width: 6, height: 6, shape: 'ellipse' }
+                        style: {
+                            width: 6, height: 6, shape: 'ellipse',
+                            //label: 'data(v)', 'font-size': 10
+                        }
                     },
                     {
                         selector: 'edge',
@@ -62,6 +64,7 @@
                   var nodeId = idPrefix('n', i);
                   g.elements.push({
                     data: { id: nodeId, v: i },
+                    parent: idPrefix('', ''),
                     classes: classes
                   });
 
@@ -81,6 +84,7 @@
                         source: idPrefix('n', edge[0]),
                         target: idPrefix('n', edge[1])
                       },
+                    parent: idPrefix('', ''),
                       classes: classes
                   });
                 } );
@@ -88,8 +92,11 @@
             });
 
             var cy = cytoscape(g);
+            //cy.use('cose-bilkent');
             //cy.ready( function() { console.log('graph ready') } );
         }
+
+        window.onload = runGraphs;
     </script>
 </head>
 
