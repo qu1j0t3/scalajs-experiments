@@ -1,10 +1,8 @@
 package tutorial.webapp
 
-import java.io.{BufferedWriter, File, FileWriter}
-import java.nio.charset.StandardCharsets
+import java.io._
 
 import tutorial.webapp.GraphEnumerate.Edge
-import com.fazecast.jSerialComm.SerialPort
 
 object VectorData {
   import HpGl._

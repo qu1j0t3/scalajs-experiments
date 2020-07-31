@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fractal</title>
+
+    <style>
+        #the-canvas {
+            position: absolute;
+            width: 95%;
+            height: 95%;
+        }
+    </style>
+
+    <!-- Include Scala.js compiled code -->
+    <script type="text/javascript" src="target/scala-2.12/scalajs-experiments-fastopt.js"></script>
+
+    <script type="text/javascript">
+        function renderFrac(lines) {
+            console.log(lines)
+        }
+
+        window.onload = runFrac;
+    </script>
+</head>
+
+<body>
+<div id="the-canvas"></div>
+</body>
+
+</html>
