@@ -1,11 +1,9 @@
 package tutorial.webapp
 
-import org.scalajs.dom.document
-import tutorial.webapp.GraphEnumerate.{Edge, appendPre, graphs}
-
 import scala.scalajs.js
-import scala.scalajs.js.Dynamic.global
 import scala.scalajs.js.annotation.{JSExportTopLevel, JSGlobalScope}
+import org.scalajs.dom
+import org.scalajs.dom.html
 
 /**
  * A disconnected line
@@ -15,9 +13,8 @@ case class Line(x0: Double, y0: Double, x1: Double, y1: Double) {
 }
 
 object FractalDemo {
-  import HpGl._
 
-  def plot = {
+  def plot(xMax: Double, yMax: Double): List[Line] = {
 
     def cross(x: Double, y: Double, xb: Double, yb: Double, depth: Int): List[Line] = {
       if (depth > 0) {
@@ -46,19 +43,28 @@ object FractalDemo {
   @js.native
   @JSGlobalScope
   object Js extends js.Object {
-    def renderFrac(lines: js.Array[js.Array[Double]]): Unit = js.native
+    //def renderFrac(lines: js.Array[js.Array[Double]]): Unit = js.native
   }
 
   @JSExportTopLevel("runFrac")
-  def runFrac(): Unit = {
+  def runFrac(c: html.Canvas): Unit = {
     import js.JSConverters._
 
-    val t0 = global.Date.now()
-    val order = 5
-    val gs = graphs(order)
-    val t1 = global.Date.now()
-    appendPre(document.body, (t1 - t0).toString)
+    type Ctx2D = dom.CanvasRenderingContext2D
+    val ctx = c.getContext("2d").asInstanceOf[Ctx2D]
 
-    Js.renderFrac(plot.map { case Line(x0, y0, x1, y1) => js.Array(x0, y0, x1, y1) }.toJSArray)
+    val w = Math.min(c.width, c.height)
+
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 3
+
+    plot(w, w).foreach{ case Line(x0, y0, x1, y1) =>
+      ctx.beginPath()
+      ctx.moveTo(x0, y0)
+      ctx.lineTo(x1, y1)
+      ctx.stroke()
+    }
+
+    //Js.renderFrac(plot(c.width, c.height).map { case Line(x0, y0, x1, y1) => js.Array(x0, y0, x1, y1) }.toJSArray)
   }
 }
