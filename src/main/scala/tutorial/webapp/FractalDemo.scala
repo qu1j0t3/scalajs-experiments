@@ -14,7 +14,7 @@ case class Line(x0: Double, y0: Double, x1: Double, y1: Double) {
 
 object FractalDemo {
 
-  def plot(xMax: Double, yMax: Double): List[Line] = {
+  def plot(xMax: Double, yMax: Double, depth: Int): List[Line] = {
 
     def cross(x: Double, y: Double, xb: Double, yb: Double, depth: Int): List[Line] = {
       if (depth > 0) {
@@ -34,7 +34,7 @@ object FractalDemo {
     val radius = yMax * 0.45
 
     List(Line(xMax/2 - radius, yMax/2, xMax/2 + radius, yMax/2)) ++
-      cross(xMax/2, yMax/2, radius, 0, 5) /*++
+      cross(xMax/2, yMax/2, radius, 0, depth) /*++
       cross(xMax/2, yMax/2, 0, radius, 4) ++
       cross(xMax/2, yMax/2, -radius, 0, 4) ++
       cross(xMax/2, yMax/2, 0, -radius, 4)*/
@@ -58,7 +58,7 @@ object FractalDemo {
     ctx.lineCap = "round"
     ctx.globalCompositeOperation = "lighter"
 
-    plot(c.width, c.height).foreach{ case Line(x0, y0, x1, y1) =>
+    plot(c.width, c.height, 5).foreach{ case Line(x0, y0, x1, y1) =>
       ctx.beginPath()
       ctx.moveTo(x0, y0)
       ctx.lineTo(x1, y1)

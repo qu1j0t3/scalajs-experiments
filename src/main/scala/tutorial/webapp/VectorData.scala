@@ -41,10 +41,8 @@ object VectorData {
       val edges = g.toList.flatMap {
         case Edge(u, v) =>
           List(
-            PenUp,
-            PlotAbs(pos(u)),
-            PenDown,
-            PlotAbs(pos(v))
+            PenUp, PlotAbs(pos(u)),
+            PenDown, PlotAbs(pos(v))
           )
       }
 
@@ -55,31 +53,25 @@ object VectorData {
         if (!connectedNodes.contains(node)) {
           val (x, y) = pos(node)
           List(
-            PenUp,
-            PlotAbs((x - 4, y - 4)),
-            PenDown,
-            PlotRel((4, 4)),
-            PenUp,
-            PlotRel((-4, 0)),
-            PenDown,
-            PlotRel((4, -4))
+            PenUp, PlotAbs((x - 4, y - 4)),
+            PenDown, PlotRel((4, 4)),
+            PenUp, PlotRel((-4, 0)),
+            PenDown, PlotRel((4, -4))
           )
         } else {
           Nil
         }
       }.toList
 
-      //SelectPen(HalfBrightness) :: (edges ++ (SelectPen(FullBrightness) :: nodes))
       edges ++ nodes
-
     }
 
-    //commands.foreach(cmd => println(cmd.text + ";"))
+    /*commands.foreach(cmd => println(cmd.text + ";"))
 
     val file = new File(s"/Users/toby/Documents/git/scalajs-experiments/hpgl-order$order.txt")
     val bw = new BufferedWriter(new FileWriter(file))
     bw.write(commands.map(_.text + ";\n").mkString)
-    bw.close()
+    bw.close()*/
 
     HpGl.send(commands)
   }

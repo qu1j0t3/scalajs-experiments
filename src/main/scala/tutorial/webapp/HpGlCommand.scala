@@ -33,6 +33,9 @@ sealed trait HpGlCommand {
 
   def text: String
 }
+case object Page extends HpGlCommand {
+  def text = "PG"
+}
 case object PenUp extends HpGlCommand {
   def text = "PU"
 }
@@ -51,31 +54,4 @@ case class PlotRel(ps: (Double,Double)*) extends HpGlCommand {
 }
 case class SelectPen(pen: HpGlPen) extends HpGlCommand {
   def text = s"SP ${pen.number}"
-}
-
-object HpGl {
-  // Parameters for HP 1347A vector display
-  val xMax = 2047
-  val yMax = 1512
-
-  def send(commands: Iterable[HpGlCommand]): Unit = {
-    val port = SerialPort.getCommPort("/dev/tty.wchusbserial5d10")
-    def writeString(s: String): Unit = {
-      val bytes = s.getBytes(StandardCharsets.US_ASCII)
-      port.writeBytes(bytes, bytes.length)
-      Thread.sleep(10)
-    }
-    port.setComPortParameters(115200, 8, 1, SerialPort.NO_PARITY)
-    assert(port.openPort());
-    Thread.sleep(1000)
-    writeString("\n")
-    writeString("++v 0\n")
-    writeString("++auto 0\n")
-    writeString("++addr 1\n")
-    writeString("\n")
-    writeString("pg;\n")
-    commands.foreach(cmd => writeString(cmd.text + ";\n"))
-    Thread.sleep(100)
-    port.closePort()
-  }
 }
