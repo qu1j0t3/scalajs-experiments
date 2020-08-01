@@ -30,9 +30,10 @@ object VectorData {
     val commands = gs.zipWithIndex.flatMap { case (g,idx) =>
       // graph nodes are labelled 1..order
 
+      val cx = xCentre + ((idx % cols) - (cols-1)/2.0) * graphSpacing
+      val cy = yCentre - (Math.floor(idx / cols) - (rows-1)/2.0) * graphSpacing
+
       def pos(i: Int): (Double,Double) = {
-        val cx = xCentre + ((idx % cols) - (cols-1)/2.0) * graphSpacing
-        val cy = yCentre - (Math.floor(idx / cols) - (rows-1)/2.0) * graphSpacing
         val a = 2*Math.PI*i/order
         (cx + graphRadius*Math.cos(a),
          cy + graphRadius*Math.sin(a))
@@ -63,7 +64,7 @@ object VectorData {
         }
       }.toList
 
-      edges ++ nodes
+      List(PenUp, PlotAbs((cx-graphRadius, cy-graphRadius-50)), Label(g.size.toString)) ++ edges ++ nodes
     }
 
     /*commands.foreach(cmd => println(cmd.text + ";"))

@@ -55,3 +55,6 @@ case class PlotRel(ps: (Double,Double)*) extends HpGlCommand {
 case class SelectPen(pen: HpGlPen) extends HpGlCommand {
   def text = s"SP ${pen.number}"
 }
+case class Label(str: String) extends HpGlCommand {
+  def text = s"LB $str\003"
+}
