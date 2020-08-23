@@ -5,13 +5,6 @@ import scala.scalajs.js.annotation.{JSExportTopLevel, JSGlobalScope}
 import org.scalajs.dom
 import org.scalajs.dom.html
 
-/**
- * A disconnected line
- */
-case class Line(x0: Double, y0: Double, x1: Double, y1: Double) {
-  def asHpGl: List[HpGlCommand] = List(PenUp, PlotAbs((x0, y0)), PenDown, PlotAbs((x1, y1)))
-}
-
 object FractalDemo {
 
   def plot(xMax: Double, yMax: Double, depth: Int): List[Line] = {

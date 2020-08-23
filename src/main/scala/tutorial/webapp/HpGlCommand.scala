@@ -33,6 +33,14 @@ sealed trait HpGlCommand {
 
   def text: String
 }
+
+/**
+ * A disconnected line
+ */
+case class Line(x0: Double, y0: Double, x1: Double, y1: Double) {
+  def asHpGl: List[HpGlCommand] = List(PenUp, PlotAbs((x0, y0)), PenDown, PlotAbs((x1, y1)))
+}
+
 case object Page extends HpGlCommand {
   def text = "PG"
 }
