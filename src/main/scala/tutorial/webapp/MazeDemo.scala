@@ -9,29 +9,14 @@ import scala.annotation.tailrec
 import scala.util.Random
 
 object MazeDemo {
-  /**
-   * From Jamis Buck, the description of maze generation by recursive backtracking:
-   *
-   * 1. Choose a starting point
-   * 2. Crawl forward: randomly choose a wall and delete it if adjacent cell has not been visited
-   * 3. if all adjacent cells have been visited, backtrack
-   * 4. algorithm ends when we have backtracked to starting point
-   *
-   * Data:
-   * * Set of walls
-   * * Visited flag per cell
-   *
-   * Cells are indexed 0,0 top left, i,j where i increases to the right (east), j increases down (south)
-   * Walls are represented as (0,0,false) is West wall from 0,0; (0,0,true) is North wall from 0,0
-   */
 
-  sealed abstract class Dir(istep: Int, jstep: Int)
+  sealed trait Dir
 
   object Dir {
-    case object North extends Dir(0, -1)
-    case object West extends Dir(-1, 0)
-    case object South extends Dir(0, 1)
-    case object East extends Dir(1, 0)
+    case object North extends Dir
+    case object West extends Dir
+    case object South extends Dir
+    case object East extends Dir
 
     def n: Dir = North
     def w: Dir = West
