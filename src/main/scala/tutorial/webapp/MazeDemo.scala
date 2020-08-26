@@ -50,21 +50,15 @@ object MazeDemo {
 
     val allCells = (for {i <- 0 until w; j <- 0 until h} yield (i,j)).toSet
 
+    val wallPerms = List(Dir.w, Dir.e, Dir.n, Dir.s).permutations.toVector
+    def randomWallPerm = wallPerms( Math.abs(Random.nextInt()) % wallPerms.size )
+
     def step(i: Int, j: Int, walls: Set[(Int, Int, Dir)], unvisited: Set[(Int, Int)]): (Set[(Int, Int, Dir)],Set[(Int, Int)]) = {
       if (unvisited.isEmpty) {
         (walls,unvisited)
       } else {
-        val updatedUnvisited = unvisited - ((i, j))
-
-        val possibleWalls =
-          (if (i > 0) List(Dir.w) else Nil) ++
-          (if (i < w - 1) List(Dir.e) else Nil) ++
-          (if (j > 0) List(Dir.n) else Nil) ++
-          (if (j < h - 1) List(Dir.s) else Nil)
-
-        // shuffle available directions
-        possibleWalls.map((Random.nextInt(), _)).sortBy(_._1).map(_._2).foldLeft(
-          (walls, updatedUnvisited)
+        randomWallPerm.foldLeft(
+          (walls, unvisited - ((i, j)))
         ) { case ((w, u), d) => // remove wall and change position
           val (newi, newj, newWalls) = d match {
             case Dir.North => (i, j - 1, w - ((i, j, Dir.n)))
