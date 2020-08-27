@@ -1,9 +1,8 @@
 package tutorial.webapp
 
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.locks.ReentrantLock
 
-import com.fazecast.jSerialComm.{SerialPort, SerialPortDataListener, SerialPortEvent, SerialPortMessageListener}
+import com.fazecast.jSerialComm._
 
 object HpGl {
   // Parameters for HP 1347A vector display
