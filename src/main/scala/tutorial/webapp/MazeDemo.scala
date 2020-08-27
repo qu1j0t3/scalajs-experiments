@@ -73,12 +73,62 @@ object MazeDemo {
     }
   }
 
+  // The most simplistic way to render; each wall is a separate line
   def mazeLines(w: Int, h: Int, walls: Set[(Int, Int, Dir)]): Iterable[Line] = {
     (0 to h).flatMap(j =>
       (0 to w).flatMap(i =>
         (if (walls.contains((i, j, Dir.n))) List(Line(i, j, i+1, j)) else Nil) ++
         (if (walls.contains((i, j, Dir.w))) List(Line(i, j, i, j+1)) else Nil)))
   }
+
+  /* For vector displays, we should optimise the display list,
+     drawing as few, and as long, lines as possible.
+
+     A strategy to do this:
+     Consider the lines to be drawn as edges in the graph that can be directly defined from the wall set.
+     Until there are no degree 1 nodes left in the graph:
+       For each degree 1 node, follow the single edge from that node
+       and continue following edges in the same direction until there are no more.
+       Draw the line segment formed by these edges and eliminate these edges from the graph.
+
+     The remaining edges are part of closed paths.
+
+     As long as any edges remain:
+       Pick an arbitrary node, then follow one edge from it, in the same direction as far as we can,
+       collecting the edges into a single new segment.
+       Then start a new direction and do the same, until the starting node is reached.
+
+   */
+
+  def graph(walls: Set[(Int, Int, Dir)]) = {
+    // Nodes are tuples (i,j)
+    // Edges are defined by a predicate adjacent (a,b) where adjacent (a,b) also implies adjacent (b,a) (undirected)
+    // collect all edges defined by walls
+    // maintain a function degree(n) for all nodes
+    // when we add an edge (a,b), a != b, we increase the degree of both a and b
+    // alternatively, maintain a neighbours set for all nodes
+    walls.foldLeft(
+      //Set[(Int,Int,Int,Int)](), // edges
+      Map[(Int,Int),Set[(Int,Int)]]() // node -> neighbours
+    ){
+      case (nbrs,(i,j,d)) =>
+        val newNbrs = nbrs.getOrElse((i,j), Set())
+        d match {
+          // consider the cell coordinate to be the west end of "north" wall, edge running to east;
+          // and north end of "west" wall, edge running to south.
+          case Dir.North =>
+            val eastNbrs = nbrs.getOrElse((i+1,j), Set())
+            //edges + ((i,j,i+1,j)),
+            nbrs + ((i,j) -> (newNbrs + ((i+1,j)))) + ((i+1,j) -> (eastNbrs + ((i,j))))
+          case Dir.West =>
+            val southNbrs = nbrs.getOrElse((i,j+1), Set())
+            //edges + ((i,j,i,j+1)),
+            nbrs + ((i,j) -> (newNbrs + ((i,j+1)))) + ((i,j+1) -> (southNbrs + ((i,j))))
+        }
+    }
+
+  }
+
 
   @JSExportTopLevel("runMaze")
   def runMaze(c: html.Canvas): Unit = {
