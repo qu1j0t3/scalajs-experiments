@@ -73,6 +73,13 @@ object MazeDemo {
     }
   }
 
+  def mazeLines(w: Int, h: Int, walls: Set[(Int, Int, Dir)]): Iterable[Line] = {
+    (0 to h).flatMap(j =>
+      (0 to w).flatMap(i =>
+        (if (walls.contains((i, j, Dir.n))) List(Line(i, j, i+1, j)) else Nil) ++
+        (if (walls.contains((i, j, Dir.w))) List(Line(i, j, i, j+1)) else Nil)))
+  }
+
   @JSExportTopLevel("runMaze")
   def runMaze(c: html.Canvas): Unit = {
     import js.JSConverters._
@@ -86,10 +93,13 @@ object MazeDemo {
     ctx.globalCompositeOperation = "lighter"
 
     ctx.beginPath()
-    ctx.moveTo(0, 0)
-    ctx.lineTo(c.width, c.height)
-    ctx.moveTo(c.width, 0)
-    ctx.lineTo(0, c.height)
+    val (w, h) = (50, 50)
+    val k = c.height/(h+2.0)
+    val xpos = (c.width - k*w)/2.0
+    mazeLines(w, h, maze(w, h)._1).foreach { line =>
+      ctx.moveTo(xpos + k*line.x0, k*(1+line.y0))
+      ctx.lineTo(xpos + k*line.x1, k*(1+line.y1))
+    }
     ctx.stroke()
 
   }
