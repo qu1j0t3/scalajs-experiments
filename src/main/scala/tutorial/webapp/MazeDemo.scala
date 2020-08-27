@@ -24,7 +24,7 @@ object MazeDemo {
     def e: Dir = East
   }
 
-  def maze(w: Int, h: Int): Set[(Int, Int, Dir)] = {
+  def maze(w: Int, h: Int): (Set[(Int, Int, Dir)], Set[(Int, Int)]) = {
 
     val walls =
       (for {i <- 0 until w; j <- 0 until h}
@@ -34,6 +34,8 @@ object MazeDemo {
       (0 until h).map( (w, _, Dir.w) ) // add right column of edges
 
     val allCells = (for {i <- 0 until w; j <- 0 until h} yield (i,j)).toSet
+    // To block out areas from being visited (like 'walls'), filter out some cells:
+    // .filter(_ => Random.nextDouble() > 0.25).toSet
 
     val wallPerms = List(Dir.w, Dir.e, Dir.n, Dir.s).permutations.toVector
     def randomWallPerm = wallPerms( Math.abs(Random.nextInt()) % wallPerms.size )
@@ -59,13 +61,15 @@ object MazeDemo {
       }
     }
 
-    step(0, 0, walls, allCells)._1
+    (step(0, 0, walls, allCells)._1, allCells)
   }
 
-  def printMaze(w: Int, h: Int, walls: Set[(Int, Int, Dir)]): Unit = {
+  def printMaze(w: Int, h: Int, maze: (Set[(Int, Int, Dir)], Set[(Int, Int)])): Unit = {
+    val (walls,unvisited) = maze
     (0 to h).foreach { j =>
-      println((0 to w).map(i => "+" + (if (walls.contains((i, j, Dir.n))) "---" else "   ")).mkString)
-      println((0 to w).map(i => (if (walls.contains((i, j, Dir.w))) "|   " else "    ")).mkString)
+      def fill(i: Int) = if (i >= w || j >= h || unvisited.contains((i,j))) "   " else "XXX"
+      println((0 to w).map(i => "o" + (if (walls.contains((i, j, Dir.n))) "---" else "   ")).mkString)
+      println((0 to w).map(i => (if (walls.contains((i, j, Dir.w))) "|"+fill(i) else " "+fill(i))).mkString)
     }
   }
 
