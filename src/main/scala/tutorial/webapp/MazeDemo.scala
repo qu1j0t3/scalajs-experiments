@@ -133,9 +133,8 @@ object MazeDemo {
     def follow(
                 head: (Int,Int),
                 prev: Option[(Int,Int)],
-                dx: Int, dy: Int,
-                branches: Set[(Int,Int)]
-              ): (List[(Int,Int)],Set[(Int,Int)],Option[(Int,Int)]) = {
+                dx: Int, dy: Int
+              ): (List[(Int,Int)],Option[(Int,Int)]) = {
       val ns = nbrs(head)
       val forward = ns -- prev.toSet // ignore the node we're coming from
       val nextSameDir = (head._1+dx,head._2+dy)
@@ -144,36 +143,40 @@ object MazeDemo {
         // FIXME: When we do this, we need to eliminate this neighbour (head) from the neighbour sets
         //        for each path that was NOT chosen.
         //        This will create disconnected (cut off) paths that need to be followed later!
-        follow(nextSameDir, Some(head), dx, dy, if(forward.size > 1) branches + head else branches)
-      } else if (forward.size == 1) {
-        // change direction
+        follow(nextSameDir, Some(head), dx, dy)
+      } else if (forward.size == 1) { // change direction
         val nextNewDir = forward.head
-        val (path,bs,endpoint) = follow(nextNewDir, Some(head), sgn(nextNewDir._1 - head._1), sgn(nextNewDir._2 - head._2), branches)
-        (head :: path, bs, endpoint)
-      } else if (forward.isEmpty) {
-        // cannot continue - reached isolated endpoint of path
-        (List(head), branches, Some(head))
-      } else {
-        // cannot continue - reached a T-junction
-        (List(head), branches, None)
+        val (path,endpoint) = follow(nextNewDir, Some(head), sgn(nextNewDir._1 - head._1), sgn(nextNewDir._2 - head._2))
+        (head :: path, endpoint)
+      } else { // cannot continue - reached end of path or a T-junction
+        (List(head), Some(head))
       }
     }
 
     // take all degree one nodes. Note that the above method may follow a path
     // to a different degree one node, so collect those dead ends and skip them
-    nbrs.toList.filter{ case (_,ns) => ns.size == 1 }
+    val (seen,paths) = nbrs.toList.filter{ case (_,ns) => ns.size == 1 }
       .foldLeft( (Set[(Int,Int)](),List[List[(Int,Int)]]()) ){ case ((seen,paths),(node,ns)) =>
         if (seen.contains(node)) { // skip this node; we have already reached it
           (seen,paths)
         } else {
           // ns has exactly one member
           val next = ns.head // get that member
-          val (path, bs, endpoint) = follow(node, None, next._1 - node._1, next._2 - node._2, Set())
+          val (path, endpoint) = follow(node, None, next._1 - node._1, next._2 - node._2)
           (seen ++ endpoint.toSet, (node :: path) :: paths)
         }
       }
 
-    // Now take all degree 3 nodes (T junctions). pick the direction that isn't collinear
+    /* Now take all degree 3 nodes (T junctions). pick the direction that isn't collinear
+    nbrs.toList.filter{ case (_,ns) => ns.size == 3 }
+      .foldLeft( (seen,List[List[(Int,Int)]]()) ){ case ((seen,paths),(node,ns)) =>
+        if (seen.contains(node)) { // skip this node; we have already reached it
+          (seen,paths)
+        } else {
+          //
+        }
+      }*/
+    (seen,paths)
   }
 
 
