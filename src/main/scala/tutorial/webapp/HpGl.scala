@@ -72,6 +72,7 @@ object HpGl {
       (Page :: commands.toList).foreach { cmd =>
         val bytes = Array[Byte](0, 0, 0)
         writeString(cmd.text + ";\n")
+
         if(port.readBytes(bytes, 3) == 3) {
           if (bytes(0) == '['.toByte && bytes(2) == ']'.toByte) {
             if (bytes(1) != '1'.toByte) {
@@ -83,6 +84,7 @@ object HpGl {
         } else {
           throw new Exception("Read timed out?")
         }
+
       }
       println(s"Sent all messages")
     }

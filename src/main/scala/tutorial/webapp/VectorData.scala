@@ -67,13 +67,6 @@ object VectorData {
       List(PenUp, PlotAbs((cx-graphRadius, cy-graphRadius-50)), Label(g.size.toString)) ++ edges ++ nodes
     }
 
-    /*commands.foreach(cmd => println(cmd.text + ";"))
-
-    val file = new File(s"/Users/toby/Documents/git/scalajs-experiments/hpgl-order$order.txt")
-    val bw = new BufferedWriter(new FileWriter(file))
-    bw.write(commands.map(_.text + ";\n").mkString)
-    bw.close()*/
-
     HpGl.send(commands)
   }
 

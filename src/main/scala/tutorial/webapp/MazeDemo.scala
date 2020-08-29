@@ -5,8 +5,7 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 import org.scalajs.dom
 import org.scalajs.dom.html
 
-import scala.annotation.tailrec
-import scala.util.Random
+import util.Random
 
 object MazeDemo {
 
@@ -179,7 +178,7 @@ object MazeDemo {
           val northSouth = ns.filter{ case (i,j) => j == b }
           val ignoreDirections = if (eastWest.size > 1) eastWest else northSouth
           val next = (ns -- ignoreDirections).head
-          val (path, endpoint) = follow(node, None, next._1 - node._1, next._2 - node._2)
+          val (path, endpoint) = follow(node, None, next._1 - a, next._2 - b)
           (seen ++ endpoint.toSet, (node :: path) :: paths)
         }
       }
@@ -206,6 +205,8 @@ object MazeDemo {
 
     val walls = maze(w, h)._1
 
+    // Draw all walls
+
     ctx.beginPath()
     mazeLines(w, h, walls).foreach { line =>
       ctx.moveTo(xpos + k*line.x0, k*(1+line.y0))
@@ -218,6 +219,9 @@ object MazeDemo {
     ctx.lineWidth = 4
 
     val (p1,p2) = linkEdges(graph(walls))
+
+    // Draw the paths linked from degree-1 points
+
     p1.foreach{ path =>
       val (x,y) = (xpos + k*path.head._1, k*(1+path.head._2))
       ctx.beginPath()
@@ -231,6 +235,8 @@ object MazeDemo {
     }
 
     ctx.strokeStyle = "#600"
+
+    // Draw the paths linked from degree-3 (T junctions)
 
     p2.foreach{ path =>
       val (x,y) = (xpos + k*path.head._1, k*(1+path.head._2))
@@ -246,3 +252,30 @@ object MazeDemo {
 
   }
 }
+
+object VectorMaze {
+  import MazeDemo._
+  import HpGl._
+
+  def plot(): List[HpGlCommand] = {
+    val (w, h) = (24, 24)
+    val walls = maze(w, h)._1
+
+    val k = yMax/(h+2.0)
+    val xpos = (xMax - k*w)/2.0
+    val ypos = (yMax - k*h)/2.0
+
+    val (p1,p2) = linkEdges(graph(walls))
+
+    def abs(n: (Int,Int)): HpGlCommand = PlotAbs( (xpos + k*n._1, ypos + k*n._2) )
+
+    (p1 ++ p2 ++ List(List((0,0),(w,0),(w,h),(0,h),(0,0))))
+      .flatMap(nodes => List(PenUp, abs(nodes.head), PenDown) ++ nodes.tail.map(abs))
+  }
+
+  def run(): Unit = {
+    HpGl.send(Page :: plot())
+  }
+
+}
+
