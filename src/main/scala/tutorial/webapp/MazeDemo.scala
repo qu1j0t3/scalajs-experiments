@@ -153,8 +153,7 @@ object MazeDemo {
       }
     }
 
-    // take all degree one nodes. Note that the above method may follow a path
-    // to a different degree one node, so collect those dead ends and skip them
+    // take all degree one nodes. Collect the path endpoints so we do not reprocess them.
     val (seen,paths) = nbrs.toList.filter{ case (_,ns) => ns.size == 1 }
       .foldLeft( (Set[(Int,Int)](),List[List[(Int,Int)]]()) ){ case ((seen,paths),(node,ns)) =>
         if (seen.contains(node)) { // skip this node; we have already reached it
@@ -167,16 +166,25 @@ object MazeDemo {
         }
       }
 
-    /* Now take all degree 3 nodes (T junctions). pick the direction that isn't collinear
-    nbrs.toList.filter{ case (_,ns) => ns.size == 3 }
+    // Now take all degree 3 nodes (T junctions). pick the direction that isn't collinear
+    val (_,paths2) = nbrs.toList.filter{ case (_,ns) => ns.size == 3 }
       .foldLeft( (seen,List[List[(Int,Int)]]()) ){ case ((seen,paths),(node,ns)) =>
         if (seen.contains(node)) { // skip this node; we have already reached it
           (seen,paths)
         } else {
-          //
+          val (a,b) = node
+          // if node is at (a,b), neighbours will be (a,b-1),(a,b+1),(a±1,b) for a departure left or right
+          // if node is at (a,b), neighbours will be (a-1,b),(a+1,b),(a,b±1) for a departure up or down
+          val eastWest = ns.filter{ case (i,j) => i == a }
+          val northSouth = ns.filter{ case (i,j) => j == b }
+          val ignoreDirections = if (eastWest.size > 1) eastWest else northSouth
+          val next = (ns -- ignoreDirections).head
+          val (path, endpoint) = follow(node, None, next._1 - node._1, next._2 - node._2)
+          (seen ++ endpoint.toSet, (node :: path) :: paths)
         }
-      }*/
-    (seen,paths)
+      }
+
+    (paths,paths2)
   }
 
 
@@ -187,12 +195,12 @@ object MazeDemo {
     type Ctx2D = dom.CanvasRenderingContext2D
     val ctx = c.getContext("2d").asInstanceOf[Ctx2D]
 
-    ctx.strokeStyle = "#777"
+    ctx.strokeStyle = "#555"
     ctx.lineWidth = 20
     ctx.lineCap = "round"
     ctx.globalCompositeOperation = "lighter"
 
-    val (w, h) = (20, 20)
+    val (w, h) = (24, 24)
     val k = c.height/(h+2.0)
     val xpos = (c.width - k*w)/2.0
 
@@ -209,8 +217,22 @@ object MazeDemo {
     ctx.strokeStyle = "#444"
     ctx.lineWidth = 4
 
-    val (_, paths) = linkEdges(graph(walls))
-    paths.foreach{ path =>
+    val (p1,p2) = linkEdges(graph(walls))
+    p1.foreach{ path =>
+      val (x,y) = (xpos + k*path.head._1, k*(1+path.head._2))
+      ctx.beginPath()
+      ctx.moveTo(x-5,y-5)
+      ctx.lineTo(x+5,y+5)
+      ctx.moveTo(x-5,y+5)
+      ctx.lineTo(x+5,y-5)
+      ctx.moveTo(x,y)
+      path.tail.foreach{ case (i,j) => ctx.lineTo(xpos + k*i, k*(1+j)) }
+      ctx.stroke()
+    }
+
+    ctx.strokeStyle = "#600"
+
+    p2.foreach{ path =>
       val (x,y) = (xpos + k*path.head._1, k*(1+path.head._2))
       ctx.beginPath()
       ctx.moveTo(x-5,y-5)
