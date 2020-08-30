@@ -197,6 +197,7 @@ object MazeDemo {
     ctx.strokeStyle = "#555"
     ctx.lineWidth = 20
     ctx.lineCap = "round"
+    ctx.lineJoin = "round"
     ctx.globalCompositeOperation = "lighter"
 
     val (w, h) = (24, 24)
@@ -269,8 +270,8 @@ object VectorMaze {
 
     def abs(n: (Int,Int)): HpGlCommand = PlotAbs( (xpos + k*n._1, ypos + k*n._2) )
 
-    (p1 ++ p2 ++ List(List((0,0),(w,0),(w,h),(0,h),(0,0))))
-      .flatMap(nodes => List(PenUp, abs(nodes.head), PenDown) ++ nodes.tail.map(abs))
+    (p1 ++ p2 ++ List(List((0,0), (w,0), (w,h), (0,h), (0,0))))
+      .flatMap { case first :: rest => List(PenUp, abs(first), PenDown) ++ rest.map(abs) }
   }
 
   def run(): Unit = {
