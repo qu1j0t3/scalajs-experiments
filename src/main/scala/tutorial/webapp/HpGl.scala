@@ -45,47 +45,17 @@ object HpGl {
       port.removeDataListener()
 
       writeString("\n")
-      writeString("++auto 0\n")  // do not try to receive response after message
+      writeString("++auto 0\n")  // do not try to receive response after sending message
       writeString("++addr 1\n")  // device address
-      writeString("++v 2\n") // 2 = enable status prompt after each command or message
       writeString("\n")
-
-      // Tiny state machine to flush data from port and sync up to '[]'
-      // which is the response expected after the empty command.
-      var st = 2
-      val b = Array[Byte](0)
-      // flush everything until the expected '[]'; let a timeout end this phase
-      while(st != 0 && port.readBytes(b, 1) == 1) {
-        if(b(0) == '['.toByte) {
-          st = 1
-        } else if (st == 1 && b(0) == ']'.toByte) {
-          println("\nSynced")
-          st = 0
-        } else {
-          print(b(0).toChar)
-          st = 2 // throw away anything else, but reset state
-        }
-      }
 
       println(s"Sending messages")
 
       (Page :: commands.toList).foreach { cmd =>
         val bytes = Array[Byte](0, 0, 0)
         writeString(cmd.text + ";\n")
-
-        if(port.readBytes(bytes, 3) == 3) {
-          if (bytes(0) == '['.toByte && bytes(2) == ']'.toByte) {
-            if (bytes(1) != '1'.toByte) {
-              throw new Exception(s"Message error after: ${cmd.text}")
-            }
-          } else {
-            throw new Exception(s"Bad status format: ${new String(bytes, StandardCharsets.US_ASCII)}")
-          }
-        } else {
-          throw new Exception("Read timed out?")
-        }
-
       }
+
       println(s"Sent all messages")
     }
     finally {
